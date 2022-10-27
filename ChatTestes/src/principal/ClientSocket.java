@@ -23,6 +23,10 @@ public class ClientSocket {
     public String getMessage() {
 
         try {
+             /*
+            Recebe a mensagem pelo socket utilizando o objeto BufferedReader
+            
+            */
             return in.readLine();
         } catch (IOException e) {
             return null;
@@ -30,19 +34,28 @@ public class ClientSocket {
     }
 
     public boolean sendMsg(String msg) {
-
+        
+        /*
+            envia a mensagem pelo socket utilizando o objeto PrintWriter
+        */
         out.println(msg);
         return !out.checkError();
     }
 
     public SocketAddress getRemoteSocketAddress() {
 
+        /*
+            captura o endereço do socket a qual estamos conectados
+        */
         return socket.getRemoteSocketAddress();
 
     }
 
     public void closeInOut() throws IOException {
-
+        
+        /*
+            fecha totalmente a conexão
+        */
         in.close();
         out.close();
         socket.close();

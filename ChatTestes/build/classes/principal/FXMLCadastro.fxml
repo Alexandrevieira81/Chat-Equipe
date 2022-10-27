@@ -29,7 +29,7 @@
                   <Label layoutX="22.0" layoutY="29.0" text="Categoria" />
                   <Label layoutX="21.0" layoutY="133.0" text="Descrição" />
                   <TextArea fx:id="textAreaCDescricao" layoutX="21.0" layoutY="157.0" prefHeight="159.0" prefWidth="292.0" />
-                  <ComboBox fx:id="comboBoxCCategoria" layoutX="27.0" layoutY="55.0" prefHeight="25.0" prefWidth="216.0" promptText="1" />
+                  <ComboBox fx:id="comboBoxCCategoria" layoutX="27.0" layoutY="55.0" prefHeight="25.0" prefWidth="216.0" promptText="0" />
                </children>
             </AnchorPane>
         </items>

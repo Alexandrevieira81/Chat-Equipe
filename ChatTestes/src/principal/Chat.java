@@ -43,7 +43,13 @@ public class Chat extends Application {
                         System.out.println("Fechou o socket");
 
                         try {
-                            FXMLController.clientSocket.sendMsg(null);
+                            /*
+                            Aqui ele pega o evento onClose da janela, pode notar que ele fecha 
+                            o socket da janela do controller caso o usuário escolha o sim na janela
+                            de confirmação. Antes de fechar ele mandava um null para matar a Thread
+                            no servidor, removi por enquanto, pois estava bugando o servidor dos outros
+                            */
+                            //FXMLController.clientSocket.sendMsg(null);
                             FXMLController.clientSocket.closeInOut();
                             stage.close();
                         } catch (IOException ex) {
@@ -56,6 +62,10 @@ public class Chat extends Application {
                         break;
 
                     case 1:
+                        /*
+                            Se escolher não na janela ele cai aqui, essa função consume 
+                            não deixa a janela fechar
+                        */
                         w.consume();
                         break;
                 }

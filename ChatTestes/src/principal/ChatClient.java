@@ -2,6 +2,9 @@ package principal;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.json.simple.JSONObject;
 
 /*
@@ -25,17 +28,31 @@ public class ChatClient {
 
     }
 
-    public ClientSocket start() throws IOException {
+    public ClientSocket start(){
 
-        clientSocket = new ClientSocket(
-                new Socket(SERVER_ADDRESS, 8089));
-        //System.out.println(clientSocket.getMessage());
+        /*
+            Método start cria um objeto ClienteSocket
+        */
+        try {
+            clientSocket = new ClientSocket(
+                    new Socket(SERVER_ADDRESS, 8099));
+            //System.out.println(clientSocket.getMessage());
 
-        return clientSocket;
+            return clientSocket;
+        } catch (IOException ex) {
+             JOptionPane.showMessageDialog(null, "Servidor Encontra-se Offline!", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+        }
+        return null;
     }
 
     public void messageLoop(String msg, String ra) throws IOException {
-
+        
+        /*
+            Nome aqui ficou messaLoop porque antes estava na linha de comando
+            dentro do loop, porém como ele ficou dentro de um botão, agora só chama
+            a função sendMsg, que manda a mensagem pelo socket
+        
+        */
         clientSocket.sendMsg("{\"operacao\":\"mensagem\",\"mensagem\":\"" + msg + "\",\"privado\":\"" + ra + "\"}");
 
     }
@@ -54,6 +71,10 @@ public class ChatClient {
 
     public void carregaUsuarios(String ra, String senha) throws IOException {
 
+        /*
+        
+            manda um pedido de lista pro servidor
+        */
         JSONObject params = new JSONObject();
         params.put("ra", ra);
         params.put("senha", senha);
