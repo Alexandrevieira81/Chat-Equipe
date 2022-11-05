@@ -27,7 +27,9 @@ public class ClientSocket {
             Recebe a mensagem pelo socket utilizando o objeto BufferedReader
             
             */
+             
             return in.readLine();
+           
         } catch (IOException e) {
             return null;
         }
@@ -59,6 +61,7 @@ public class ClientSocket {
         in.close();
         out.close();
         socket.close();
+        
     }
 
     public Socket getSocket() {

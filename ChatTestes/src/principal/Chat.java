@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -25,8 +26,14 @@ public class Chat extends Application {
 
     @Override
     public void start(Stage stage) {
+        
         try {
-            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("principal/FXML.fxml"));
+
+            FXMLLoader floader = new FXMLLoader(getClass().getResource("/principal/FXML.fxml")); 
+            Parent root =(Parent) floader.load();
+            
+            FXMLController controle = floader.<FXMLController>getController();
+            
 
             Scene scene = new Scene(root);
             stage.setScene(scene);
@@ -40,36 +47,44 @@ public class Chat extends Application {
                         JOptionPane.QUESTION_MESSAGE)) {
 
                     case 0:
-                        System.out.println("Fechou o socket");
+                        
 
                         try {
-                            /*
+                        /*
                             Aqui ele pega o evento onClose da janela, pode notar que ele fecha 
                             o socket da janela do controller caso o usuário escolha o sim na janela
                             de confirmação. Antes de fechar ele mandava um null para matar a Thread
                             no servidor, removi por enquanto, pois estava bugando o servidor dos outros
-                            */
-                            //FXMLController.clientSocket.sendMsg(null);
-                            FXMLController.clientSocket.closeInOut();
-                            stage.close();
-                        } catch (IOException ex) {
-                            System.out.println("Cliente já desconectou !");
-                        } catch (NullPointerException e) {
-                            System.out.println("Cliente nem tentou conexão!");
-                            stage.close();
-                        }
+                         */
+                        //FXMLController.clientSocket.sendMsg(null);
+                        //FXMLController.clientSocket.closeInOut();
+                        controle.logout();
+                        Platform.exit();
+                        System.exit(0);
 
-                        break;
+                    } catch (NullPointerException e) {
+
+                        System.out.println("Cliente nem tentou conexão!");
+                        Platform.exit();
+                        System.exit(0);
+
+                    } catch (Exception ex) {
+                        Platform.exit();
+                        System.exit(0);
+                    }
+
+                    break;
 
                     case 1:
                         /*
                             Se escolher não na janela ele cai aqui, essa função consume 
                             não deixa a janela fechar
-                        */
+                         */
                         w.consume();
                         break;
                 }
-            });
+            }
+            );
         } catch (Exception ex) {
             Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
         }

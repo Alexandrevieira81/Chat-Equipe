@@ -69,13 +69,21 @@ public class ChatClient {
 
     }
 
-    public void carregaUsuarios(String ra, String senha) throws IOException {
+    public void carregaUsuarios(Integer categoria_id) throws IOException {
 
         /*
         
             manda um pedido de lista pro servidor
          */
-        clientSocket.sendMsg("{\"operacao\":\"obter_usuarios\"}");
+        JSONObject params = new JSONObject();
+        params.put("categoria_id", categoria_id);
+        
+
+        JSONObject obj = new JSONObject();
+        obj.put("operacao", "obter_usuarios");
+        obj.put("parametros", params);
+        //clientSocket.sendMsg("{\"operacao\":\"obter_usuarios\"}");
+        clientSocket.sendMsg(obj.toJSONString());
 
     }
 }

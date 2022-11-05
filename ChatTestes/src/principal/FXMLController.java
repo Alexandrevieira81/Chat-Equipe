@@ -86,6 +86,8 @@ public class FXMLController implements Initializable {
     @FXML
     private Button btnCadastrar;
 
+    public static Thread t1;
+
     /**
      * Initializes the controller class.
      */
@@ -97,7 +99,7 @@ public class FXMLController implements Initializable {
          */
         cliente = new ChatClient();
         chatPrivado = " ";
-        ObservableList<String> categorias = FXCollections.observableArrayList("programador", "eletricista","mecanico","cientista","professor","analista","gamer","stremer");//colocar o resto das categorias
+        ObservableList<String> categorias = FXCollections.observableArrayList("programador", "eletricista", "mecanico", "cientista", "professor", "analista", "gamer", "stremer");//colocar o resto das categorias
         comboBoxCategoria.setItems(categorias);
 
     }
@@ -125,7 +127,8 @@ public class FXMLController implements Initializable {
                 obj.put("parametros", params);
 
                 cliente.LogarDeslogar(obj.toJSONString());
-                new Thread(() -> clientMessageReturnLoop()).start();
+                t1 = new Thread(() -> clientMessageReturnLoop());
+                t1.start();
 
             }
 
@@ -148,7 +151,8 @@ public class FXMLController implements Initializable {
                 obj.put("parametros", params);
 
                 cliente.LogarDeslogar(obj.toJSONString());
-                new Thread(() -> clientMessageReturnLoop()).start();
+                t1 = new Thread(() -> clientMessageReturnLoop());
+                t1.start();
 
             }
 
@@ -157,8 +161,13 @@ public class FXMLController implements Initializable {
     }
 
     @FXML
-    private void desconectarChat(ActionEvent event) throws Exception {
+    private void desconectarChat(ActionEvent event) throws Exception{
+            
+        logout();
 
+    }
+
+    public void logout() throws Exception {
         try {
 
             /*
@@ -180,8 +189,10 @@ public class FXMLController implements Initializable {
         }
     }
 
-    @FXML
-    private void enviarMensagem(ActionEvent event) throws IOException {
+
+
+@FXML
+private void enviarMensagem(ActionEvent event) throws IOException {
 
         if (textFieldMensagem.getText().equals("")) { //Evitar que o usuário mande vazio
             System.out.println("Campo está vazio: Digite algo");
@@ -205,8 +216,11 @@ public class FXMLController implements Initializable {
 
         //Loop "Infinito"
         // Aqui já recebe a mensagem pelo método clientSocket.getMessage() e testa se seu valor não está nulo
-        while ((msg = clientSocket.getMessage()) != null) {
-
+        while (!t1.isInterrupted()) {
+            
+            if((msg = clientSocket.getMessage()) == null){
+                break;
+            }
             status = null;
             try {
 
@@ -242,25 +256,31 @@ public class FXMLController implements Initializable {
                 try {
                     /*
                         sleep evita bagunçar o chat
-                    */
-                            
+                     */
+
                     Thread.sleep(300);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+
+} catch (InterruptedException ex) {
+                    Logger.getLogger(FXMLController.class  
+
+.getName()).log(Level.SEVERE, null, ex);
                 }
 
-            } else if (((status == 200)) && (dados.containsKey("usuarios"))) {
-                
+            } else if (status == 203) {
+
                 /*
                     Por enquanto é a forma de diferenciar quando é login e lista é pela 
                     key usuarios, porém acho que vão mudar isso
-                */
+                 */
                 atualizarUsuariosOnline(dados);
                 System.out.println("Lista de Usuários Online");
                 try {
                     Thread.sleep(300);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+
+} catch (InterruptedException ex) {
+                    Logger.getLogger(FXMLController.class  
+
+.getName()).log(Level.SEVERE, null, ex);
                 }
             } else if (status == 200 && (!dados.containsKey("usuarios"))) {
                 System.out.println("Logado com Sucesso!");
@@ -268,12 +288,12 @@ public class FXMLController implements Initializable {
                 paneHome.setVisible(true);
 
             } else if (status == 202) { //Desconecta pela solicitação do usuário
-                  JOptionPane.showConfirmDialog(null, "Usuário já encontra-se Desconectado!! ", " ", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.showConfirmDialog(null, "Usuário já encontra-se Desconectado!! ", " ", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.DEFAULT_OPTION);
                 System.out.println("Usuário já encontra-se Desconectado!");
 
             } else if (status == 403) {
-                  JOptionPane.showConfirmDialog(null, "Cliente já Encontra-se Conectado! ", " ", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.showConfirmDialog(null, "Cliente já Encontra-se Conectado! ", " ", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.DEFAULT_OPTION);
                 System.out.println("Cliente já Encontra-se Conectado!");
                 btnEnviar.setDisable(true);
@@ -282,13 +302,13 @@ public class FXMLController implements Initializable {
                 break;
 
             } else if (status == 400) {
-                  JOptionPane.showConfirmDialog(null, "Parâmetros enviados não correspondem à operação! ", " ", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.showConfirmDialog(null, "Parâmetros enviados não correspondem à operação! ", " ", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.DEFAULT_OPTION);
                 System.out.println("Parâmetros enviados não correspondem à operação!");
-                break;
+                //break;
 
             } else if (status == 404) {
-                  JOptionPane.showConfirmDialog(null, "Usuário não encontrado ou Usuário ou senha inválido! ", "", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.showConfirmDialog(null, "Usuário não encontrado ou Usuário ou senha inválido! ", "", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.DEFAULT_OPTION);
                 System.out.println("Usuário não encontrado ou Usuário ou senha inválido!");
                 //break;
@@ -301,11 +321,11 @@ public class FXMLController implements Initializable {
             } else if (status == 600) { //Desconecta pela solicitação do usuário
                 paneLogin.setVisible(true);
                 paneHome.setVisible(false);
-                
+
                 /*
                     Platform.runLater importante, pois entrega o controle para Thread
                     do javafx, unica forma de solicitar atualização de tela pela nosso Thread
-                */
+                 */
                 Platform.runLater(() -> {
                     listViewUsersOnline.getItems().clear();
 
@@ -315,13 +335,16 @@ public class FXMLController implements Initializable {
                 try {
                     /*
                         como aqui é logout é chamada a função que fecha o socket  clientSocket.closeInOut()
-                    */
+                     */
                     clientSocket.closeInOut();
-                } catch (IOException ex) {
-                    Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+
+} catch (IOException ex) {
+                    Logger.getLogger(FXMLController.class  
+
+.getName()).log(Level.SEVERE, null, ex);
                 }
                 clientSocket = null;
-                  JOptionPane.showConfirmDialog(null, "Desconectado com Sucesso! ", " ", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.showConfirmDialog(null, "Desconectado com Sucesso! ", " ", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.DEFAULT_OPTION);
                 System.out.println("Desconectado com Sucesso!");
                 break;// Não sei se o mais certo seria um return, pore´m o break está fazendo a mesma função
@@ -345,17 +368,18 @@ public class FXMLController implements Initializable {
     }
 
     @FXML
-    private void listarUsuarios(ActionEvent event) {
+private void listarUsuarios(ActionEvent event) {
 
         /*
             Chama a função que preeche o ListView de usuários online
-        */
+         */
         try {
-            cliente.carregaUsuarios(textSenha.getText(), textUsuario.getText());
+            cliente.carregaUsuarios(comboBoxCategoria.getSelectionModel().getSelectedIndex());
 
-        } catch (IOException ex) {
-            Logger.getLogger(FXMLController.class
-                    .getName()).log(Level.SEVERE, null, ex);
+} catch (IOException ex) {
+            Logger.getLogger(FXMLController.class  
+
+.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -386,7 +410,7 @@ public class FXMLController implements Initializable {
                     de conversão, só encapsulei com um parênteses a mais e sumiu
                     caso ocorra em outra parte do código é só envolver no parênteses
                 
-                */
+                 */
                 user.setDisponibilidade((Integer.parseInt(aux.get("disponivel").toString())));
 
                 user.setRa(aux.get("ra").toString());
@@ -396,7 +420,7 @@ public class FXMLController implements Initializable {
                     Vamos ter que mudar aqui a forma de apresentar, o model usuário
                     do cliente poderá ter a disponibilidade string, daí a gente recebe o 
                     número e trata em um switch case.
-                */
+                 */
                 onLinesAux.add(user);
 
             }
@@ -430,16 +454,16 @@ public class FXMLController implements Initializable {
 
     //Captura a seleção do mouse no ListView do usuários online
     @FXML
-    private void selecionarUsuarioOnline(MouseEvent event) {
-        
+private void selecionarUsuarioOnline(MouseEvent event) {
+
         /*
             escuta mudanças no listView
-        */
+         */
         if (listViewUsersOnline.getSelectionModel().getSelectedIndex() > -1) {
-            
+
             /*
                 Caso ocorra a mudança ele chama o consultarUsuarioOnline
-            */
+             */
             consultarUsuarioOnline(event);
 
         }
@@ -453,17 +477,17 @@ public class FXMLController implements Initializable {
         /*
             Pega o item selecionado no listview, e seleciona o Ra, preenche a variável global
             chat privado, a qual controla com quem o cliente quer falar
-        */
+         */
         Usuario registroSel = listViewUsersOnline.getSelectionModel().getSelectedItem();
         chatPrivado = registroSel.getRa();
     }
 
     @FXML
-    private void selecionarCategoria(ActionEvent event) {
+private void selecionarCategoria(ActionEvent event) {
 
         /*
             semelhante o que ocorre em usuário online só que no combobox
-        */
+         */
         if (comboBoxCategoria.getSelectionModel().getSelectedIndex() > -1) {
             consultar(event);
         }
@@ -475,14 +499,14 @@ public class FXMLController implements Initializable {
             Aqui vai chamar a função pra obter a lista de usuários online
             dai vai passa o parâmetro da categoria para filtrar, por enquanto ele
             só pritn a seleção
-        */
+         */
         comboBoxCategoria.getSelectionModel().getSelectedItem();
         System.out.println(comboBoxCategoria.getSelectionModel().getSelectedItem());
 
     }
 
     @FXML
-    private void cadastro(ActionEvent event) {
+private void cadastro(ActionEvent event) {
         FXMLCadastroController c = new FXMLCadastroController();
         fecha();
         try {
@@ -490,23 +514,22 @@ public class FXMLController implements Initializable {
         } catch (Exception e) {
         }
     }
-     public void fecha(){
+
+    public void fecha() {
         Chat.getStage().close();
     }
 
     void start(Stage stage) {
-         try {
+        try {
             Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("principal/FXML.fxml"));
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Login");
             stage.show();
             setStage(stage);
-            
+
         } catch (Exception e) {
         }
     }
-
-  
 
 }
