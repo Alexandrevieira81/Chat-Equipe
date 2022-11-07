@@ -65,8 +65,6 @@ public class FXMLController implements Initializable {
     @FXML
     private TextField textUsuario;
     @FXML
-    private Label lbSenha;
-    @FXML
     private TextField textSenha;
     @FXML
     private Button btnUsuarios;

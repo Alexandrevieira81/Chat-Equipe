@@ -22,6 +22,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javax.swing.JOptionPane;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -188,14 +189,17 @@ public class FXMLCadastroController implements Initializable {
 
             if (status == 201) {
                 System.out.println("Cadastrado com Sucesso!");
+                JOptionPane.showConfirmDialog(null, "Cadastrado com Sucesso! ", "", JOptionPane.DEFAULT_OPTION,JOptionPane.DEFAULT_OPTION);
                 break;
 
             } else if (status == 202) {
                 System.out.println(mensagem);
+                JOptionPane.showConfirmDialog(null, mensagem, "", JOptionPane.DEFAULT_OPTION,JOptionPane.DEFAULT_OPTION);
                 break;
 
             } else if (status == 400) {
                 System.out.println("Dados não Correspondem com a Operação!");
+                JOptionPane.showConfirmDialog(null, "Campo não preenchido ou RA não tem 7 digitos", "", JOptionPane.DEFAULT_OPTION,JOptionPane.DEFAULT_OPTION);
                 break;
 
             } else if (status == 500) {
