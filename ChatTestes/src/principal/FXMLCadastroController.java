@@ -9,16 +9,24 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import javax.swing.JOptionPane;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import static principal.Chat.setStage;
 
 /**
  * FXML Controller class
@@ -42,18 +50,25 @@ public class FXMLCadastroController implements Initializable {
 
     ChatClient cliente;
     ClientSocket clientSocket;
+    @FXML
+    private Button btnVoltar;
+    private Integer categoria = -1;
 
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        
+
         /*
             Cria um objeto ChatClient para que possamos usar
             todas as funções dele como o métodos start que cria o socket
-        */
+         */
         cliente = new ChatClient();
+        
+
+        ObservableList<String> categorias = FXCollections.observableArrayList("programador", "eletricista","mecanico","cientista","professor","analista","gamer","stremer");//colocar o resto das categorias
+        comboBoxCCategoria.setItems(categorias);
         // TODO
     }
 
@@ -63,16 +78,15 @@ public class FXMLCadastroController implements Initializable {
         /*
             Aqui o objeto cliente do tipo ChatClient retorna um clientSocket
             com ele realizamos todas as operações necessárias
-        */
+         */
         clientSocket = cliente.start();
-        
+
         /*
             para não extender classe  e implementar o médoto Run
             utilizamos uma função anônima seguida de uma expressão lambda,
             dessa forma é possível passar a função clientMessageReturnLoop()
             para a Thread como parâmetro.
-            
-        */
+         */
         new Thread(() -> clientMessageReturnLoop()).start();
 
         /* {
@@ -88,16 +102,15 @@ public class FXMLCadastroController implements Initializable {
              }
             }
          */
-        
-        /*
+ /*
             Aqui é meio chato de trabalhar, o macete é criar os mais internos
             e depois de criado da o put deles nos mais externos
-        */
+         */
         JSONObject params = new JSONObject();
         params.put("nome", textCNome.getText());
         params.put("ra", textCRa.getText());
         params.put("senha", textCSenha.getText());
-        params.put("categoria_id", Integer.parseInt(comboBoxCCategoria.getPromptText()));
+        params.put("categoria_id", (comboBoxCCategoria.getSelectionModel().getSelectedIndex()));
         params.put("descricao", textAreaCDescricao.getText());
 
         JSONObject obj = new JSONObject();
@@ -107,10 +120,10 @@ public class FXMLCadastroController implements Initializable {
         try {
             /*
                 note que aqui ocorre uma conversão para string, isso para enviar no buffer
-            */
+             */
             System.out.println("Protocolo de Cadastro: " + obj.toJSONString());
             cliente.EnviarCadastro(obj.toJSONString());
-           // cliente.messageLoop("{\"ra\":\"" + textUsuario.getText() + "\",\"senha\":\"" + textSenha.getText() + "\"}");
+            // cliente.messageLoop("{\"ra\":\"" + textUsuario.getText() + "\",\"senha\":\"" + textSenha.getText() + "\"}");
             // Envia uma mensagem no momento da conexão para identificar o Cliente
         } catch (IOException ex) {
             Logger.getLogger(FXMLCadastroController.class.getName()).log(Level.SEVERE, null, ex);
@@ -135,19 +148,18 @@ public class FXMLCadastroController implements Initializable {
 
             status = null;
             try {
-                
+
                 /*
                     Foi craido um objeto JSONObject "json" que vai receber o conteúdo
                     "fatiado" pelo JSONParser "parser"
-                */
+                 */
                 json = (JSONObject) parser.parse(msg);//aqui ele realimenta as variáveis
-                
+
                 /*
                     Aqui tem que verificar o protocolo, mas acho que não retorna a operação
                     no cadastro. De qualquer forma os testes como: if ((json.get("status")) != null)
                     evitam que o programa trave caso alguma dessa chaves venha nula
-                */
-                        
+                 */
                 if ((json.get("status")) != null) {
 
                     status = Integer.parseInt(json.get("status").toString());
@@ -175,15 +187,18 @@ public class FXMLCadastroController implements Initializable {
             }
 
             if (status == 201) {
-                System.out.println("Cadastrado com Sucesso!");
+                System.out.println("Cadastrado com Sucesso!");       
+                JOptionPane.showConfirmDialog(null, "Cadastrado com Sucesso! ", "", JOptionPane.DEFAULT_OPTION,JOptionPane.DEFAULT_OPTION);
                 break;
 
             } else if (status == 202) {
                 System.out.println(mensagem);
+                JOptionPane.showConfirmDialog(null, mensagem, "", JOptionPane.DEFAULT_OPTION,JOptionPane.DEFAULT_OPTION);
                 break;
 
             } else if (status == 400) {
                 System.out.println("Dados não Correspondem com a Operação!");
+                JOptionPane.showConfirmDialog(null, "Campo não preenchido ou RA não tem 7 digitos", "", JOptionPane.DEFAULT_OPTION,JOptionPane.DEFAULT_OPTION);
                 break;
 
             } else if (status == 500) {
@@ -202,4 +217,54 @@ public class FXMLCadastroController implements Initializable {
 
     }
 
+    public void start(Stage stage) throws IOException {
+
+        try {
+            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("principal/FXMLCadastro.fxml"));
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Cadastro");
+            stage.show();
+            setStage(stage);
+
+        } catch (Exception e) {
+        }
+
+    }
+
+    private void selecionarCategoria(ActionEvent event) {
+
+        /*
+            semelhante o que ocorre em usuário online só que no combobox
+         */
+        if (comboBoxCCategoria.getSelectionModel().getSelectedIndex() > -1) {
+            consultar(event);
+        }
+    }
+
+    private void consultar(ActionEvent event) {
+
+        /*
+            Aqui vai chamar a função pra obter a lista de usuários online
+            dai vai passa o parâmetro da categoria para filtrar, por enquanto ele
+            só pritn a seleção
+         */
+        //comboBoxCCategoria.getSelectionModel().getSelectedItem();
+        this.categoria = comboBoxCCategoria.getSelectionModel().getSelectedIndex();
+
+    }
+
+    @FXML
+    private void voltarLogin(ActionEvent event) {
+        FXMLController l = new FXMLController();
+        fecha();
+        try {
+            l.start(new Stage());
+        } catch (Exception e) {
+        }
+    }
+
+    public void fecha() {
+        Chat.getStage().close();
+    }
 }
